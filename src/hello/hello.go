@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -61,11 +64,7 @@ func readCommand() int {
 
 func startMonitoring() {
 	fmt.Println("Monitoring...")
-	sites := []string{
-		"https://random-status-code.herokuapp.com",
-		"https://www.alura.com.br",
-		"https://www.loadsmart.com",
-	}
+	sites := readSitesFromFile()
 
 	for i := 0; i < monitorings; i++ {
 		for _, site := range sites {
@@ -79,11 +78,46 @@ func startMonitoring() {
 }
 
 func checkSite(site string) {
-	resp, _ := http.Get(site)
+	resp, err := http.Get(site)
+
+	if err != nil {
+		fmt.Println("Something went wrong:", err)
+	}
 
 	if resp.StatusCode == 200 {
 		fmt.Println("Site:", site, "was loaded successfully")
 	} else {
 		fmt.Println("Site:", site, "is showing some problems. Status code:", resp.StatusCode)
 	}
+}
+
+func readSitesFromFile() []string {
+	var sites []string
+
+	// returns an array of bytes. Good to be used when want to print the whole file
+	// file, err := ioutil.ReadFile("sites.txt")
+
+	file, err := os.Open("sites.txt") // returns the pointer
+
+	if err != nil {
+		fmt.Println("Something went wrong:", err)
+	}
+
+	reader := bufio.NewReader(file)
+
+	for {
+		line, err := reader.ReadString('\n') // single quote represents bytes
+		if line == "" {
+			break
+		}
+		line = strings.TrimSpace(line)
+		sites = append(sites, line)
+		if err == io.EOF {
+			break
+		}
+	}
+
+	file.Close()
+
+	return sites
 }

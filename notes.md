@@ -460,3 +460,38 @@ func checkSite(site string) {
 	}
 }
 ```
+
+## Reading Files and Error Handling
+
+```go
+func readSitesFromFile() []string {
+	var sites []string
+
+	// returns an array of bytes. Good to be used when want to print the whole file
+	// file, err := ioutil.ReadFile("sites.txt")
+
+	file, err := os.Open("sites.txt") // returns the pointer
+
+	if err != nil {
+		fmt.Println("Something went wrong:", err)
+	}
+
+	reader := bufio.NewReader(file)
+
+	for {
+		line, err := reader.ReadString('\n') // single quote represents bytes
+		if line == "" {
+			break
+		}
+		line = strings.TrimSpace(line)
+		sites = append(sites, line)
+		if err == io.EOF {
+			break
+		}
+	}
+
+	file.Close()
+
+	return sites
+}
+```
