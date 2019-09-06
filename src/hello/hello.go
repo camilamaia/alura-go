@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -24,6 +26,7 @@ func main() {
 			startMonitoring()
 		case 2:
 			fmt.Println("Showing logs...")
+			printLogs()
 		case 0:
 			fmt.Println("Exiting...")
 			os.Exit(0)
@@ -86,8 +89,10 @@ func checkSite(site string) {
 
 	if resp.StatusCode == 200 {
 		fmt.Println("Site:", site, "was loaded successfully")
+		registerLog(site, true)
 	} else {
 		fmt.Println("Site:", site, "is showing some problems. Status code:", resp.StatusCode)
+		registerLog(site, false)
 	}
 }
 
@@ -120,4 +125,25 @@ func readSitesFromFile() []string {
 	file.Close()
 
 	return sites
+}
+
+func registerLog(site string, status bool) {
+	logFile, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	logFile.WriteString(time.Now().Format("02/01/2006 15:04:05") + " - " + site + " - online: " + strconv.FormatBool(status) + "\n")
+	logFile.Close()
+}
+
+func printLogs() {
+	logFile, err := ioutil.ReadFile("log.txt") // don't need to close the file since this is a higher level function
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(string(logFile))
 }

@@ -495,3 +495,18 @@ func readSitesFromFile() []string {
 	return sites
 }
 ```
+
+## Writing Files
+
+```go
+func registerLog(site string, status bool) {
+	logFile, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	logFile.WriteString(time.Now().Format("02/01/2006 15:04:05") + " - " + site + " - online: " + strconv.FormatBool(status) + "\n")
+	logFile.Close()
+}
+```
